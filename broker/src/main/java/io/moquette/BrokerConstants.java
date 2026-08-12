@@ -253,6 +253,14 @@ public final class BrokerConstants {
 
     public static final String HTTP_CLOSE_API_VERSION = "http.close_api_version";
 
+    public static final String OPLOG_ENABLE = "oplog.enable";
+    public static final String OPLOG_RECORD_BODY = "oplog.record_body";
+    public static final String OPLOG_KEEP_DAYS = "oplog.keep_days";
+    public static final String OPLOG_INCLUDE_TOPICS = "oplog.include.topics";
+    public static final String OPLOG_INCLUDE_PATHS = "oplog.include.paths";
+    public static final String OPLOG_EXCLUDE_TOPICS = "oplog.exclude.topics";
+    public static final String OPLOG_EXCLUDE_PATHS = "oplog.exclude.paths";
+
 
     private BrokerConstants() {
     }

@@ -18,6 +18,7 @@ import cn.hutool.core.util.CharsetUtil;
 import cn.hutool.core.util.StrUtil;
 import com.xiaoleilu.loServer.ServerSetting;
 import com.xiaoleilu.loServer.listener.FileProgressiveFutureListener;
+import cn.wildfirechat.oplog.OpLogRecorder;
 
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
@@ -405,6 +406,9 @@ public class Response {
 	 * @throws IOException 
 	 */
 	public ChannelFuture send() {
+		//操作日志：admin/robot/channel的写操作在此统一记录（此时结果已知）
+		OpLogRecorder.recordHttp(request, content);
+
 		ChannelFuture channelFuture;
 		if(content instanceof File){
 			//文件

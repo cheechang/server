@@ -3,6 +3,7 @@ package com.xiaoleilu.loServer.handler;
 import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -16,6 +17,7 @@ import cn.hutool.core.net.NetUtil;
 import cn.hutool.core.util.CharsetUtil;
 import cn.hutool.core.util.StrUtil;
 import cn.hutool.core.util.URLUtil;
+import io.moquette.spi.impl.Utils;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.http.FullHttpRequest;
 import io.netty.handler.codec.http.HttpHeaderNames;
@@ -59,6 +61,7 @@ public class Request {
 
 	private String path;
 	private String ip;
+	private String body;
 	private Map<String, String> headers = new HashMap<String, String>();
 	private Map<String, Object> params = new HashMap<String, Object>();
 	private Map<String, Cookie> cookies = new HashMap<String, Cookie>();
@@ -81,6 +84,26 @@ public class Request {
 
 		// IP
 		this.putIp(ctx);
+
+		// 为操作日志保留请求体快照（仅admin/robot/channel的写接口）。
+		// 必须在构建时捕获，异步响应时原始content可能已被释放
+		if (this.path != null
+			&& (this.path.startsWith("/admin") || this.path.startsWith("/robot") || this.path.startsWith("/channel"))
+			&& !HttpMethod.GET.equals(nettyRequest.method())) {
+			byte[] bytes = Utils.readBytesAndRewind(nettyRequest.content());
+			if (bytes != null && bytes.length > 0) {
+				this.body = new String(bytes, StandardCharsets.UTF_8);
+			}
+		}
+	}
+
+	/**
+	 * 获得请求体快照（仅admin/robot/channel的写接口在构建时捕获，其余为null）
+	 *
+	 * @return 请求体字符串
+	 */
+	public String getBody() {
+		return body;
 	}
 
 	/**

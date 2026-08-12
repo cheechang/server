@@ -17,6 +17,7 @@
 package io.moquette.spi.impl;
 
 import cn.wildfirechat.common.ErrorCode;
+import cn.wildfirechat.oplog.OpLogRecorder;
 import cn.wildfirechat.pojos.OutputCheckUserOnline;
 import cn.wildfirechat.pojos.UserOnlineStatus;
 import cn.wildfirechat.proto.ProtoConstants;
@@ -258,6 +259,8 @@ public class ProtocolProcessor {
             session.refreshLastActiveTime();
             forwardOnlineStatusEvent(payload.userName(), clientId, session.getPlatform(), UserOnlineStatus.ONLINE, session.getAppName());
             m_messagesStore.updateUserOnlineSetting(session, true);
+            //操作日志：记录用户连上
+            OpLogRecorder.recordUserEvent("CONNECT", clientId, payload.userName());
         }
 
         LOG.info("The CONNECT message has been processed. CId={}, username={}", clientId, payload.userName());
@@ -624,6 +627,8 @@ public class ProtocolProcessor {
         if(session != null) {
             m_messagesStore.updateUserOnlineSetting(session, false);
             forwardOnlineStatusEvent(username, clientID, session.getPlatform(), UserOnlineStatus.LOGOUT, session.getAppName());
+            //操作日志：记录用户主动断开
+            OpLogRecorder.recordUserEvent("DISCONNECT", clientID, username);
         }
 
         channel.closeFuture();
@@ -667,6 +672,8 @@ public class ProtocolProcessor {
         String username = NettyUtils.userName(channel);
         MemorySessionStore.Session session = m_sessionsStore.getSession(clientID);
         if(session != null) {
+            //操作日志：记录用户连接断开（掉线）
+            OpLogRecorder.recordUserEvent("DISCONNECT", clientID, session.getUsername());
             processOffline(session, clearSession, () -> {
                 ConnectionDescriptor oldConnDescr = new ConnectionDescriptor(clientID, channel);
                 if(connectionDescriptors.removeConnection(oldConnDescr)) {

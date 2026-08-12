@@ -27,6 +27,7 @@ import com.xiaoleilu.loServer.LoServer;
 import com.xiaoleilu.loServer.ServerSetting;
 import com.xiaoleilu.loServer.action.Action;
 import com.xiaoleilu.loServer.action.admin.AdminAction;
+import cn.wildfirechat.oplog.OpLogRecorder;
 import io.moquette.BrokerConstants;
 import io.moquette.persistence.*;
 import io.moquette.connections.IConnectionsManager;
@@ -256,6 +257,7 @@ public class Server {
         boolean configured = configureCluster(config);
 
         m_store.initStore();
+        OpLogRecorder.init(config);
         final ProtocolProcessor processor = m_processorBootstrapper.init(config, handlers, authenticator, authorizator,
             this, m_store);
         LOG.info("Initialized MQTT protocol processor");

@@ -10,6 +10,7 @@ package io.moquette.imhandler;
 
 import cn.wildfirechat.proto.ProtoConstants;
 import cn.wildfirechat.proto.WFCMessage;
+import cn.wildfirechat.oplog.OpLogRecorder;
 import cn.wildfirechat.server.ThreadPoolExecutorWrapper;
 import com.google.gson.Gson;
 import com.google.protobuf.GeneratedMessage;
@@ -36,6 +37,7 @@ import java.lang.reflect.Method;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 import java.util.*;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import static cn.wildfirechat.common.ErrorCode.ERROR_CODE_OVER_FREQUENCY;
 import static cn.wildfirechat.common.ErrorCode.ERROR_CODE_SUCCESS;
@@ -199,9 +201,30 @@ abstract public class IMHandler<T> {
                 ErrorCode errorCode = ERROR_CODE_SUCCESS;
                 ackPayload.ensureWritable(1).writeByte(errorCode.getCode());
 
+                //操作日志：只记录用户来源的写操作（admin/robot/channel已在HTTP层记录）。
+                //同步返回的在action之后直接记录；返回INVALID_ASYNC_HANDLING表示异步未决，
+                //真实结果稍后经callback产生，包装callback在结果产生时记录。opLogRecorded防止个别handler既调callback又同步返回导致重复记录
+                final boolean needRecordOpLog = requestSourceType == ProtoConstants.RequestSourceType.Request_From_User && OpLogRecorder.isUserTopicRecordable(topic);
+                final AtomicBoolean opLogRecorded = new AtomicBoolean(false);
+
+                T requestData = null;
                 try {
                     LOG.debug("execute handler for topic {}", topic);
-                    errorCode = action(ackPayload, clientID, fromUser, requestSourceType, getDataObject(payloadContent), callbackWrapper);
+                    requestData = getDataObject(payloadContent);
+                    Qos1PublishHandler.IMCallback actualCallback = callbackWrapper;
+                    if (needRecordOpLog) {
+                        final T dataForLog = requestData;
+                        actualCallback = new Qos1PublishHandler.IMCallback() {
+                            @Override
+                            public void onIMHandled(ErrorCode code, ByteBuf payload) {
+                                if (opLogRecorded.compareAndSet(false, true)) {
+                                    OpLogRecorder.recordUser(topic, clientID, fromUser, code, dataForLog);
+                                }
+                                callbackWrapper.onIMHandled(code, payload);
+                            }
+                        };
+                    }
+                    errorCode = action(ackPayload, clientID, fromUser, requestSourceType, requestData, actualCallback);
                 } catch (IllegalAccessException e) {
                     e.printStackTrace();
                     Utility.printExecption(LOG, e);
@@ -219,6 +242,12 @@ abstract public class IMHandler<T> {
                         errorCode = ErrorCode.ERROR_CODE_SERVER_ERROR;
                     }
                 }
+
+                //同步返回结果的在此记录；异步未决的已由包装的callback记录
+                if (needRecordOpLog && errorCode != ErrorCode.INVALID_ASYNC_HANDLING && opLogRecorded.compareAndSet(false, true)) {
+                    OpLogRecorder.recordUser(topic, clientID, fromUser, errorCode, requestData);
+                }
+
                 if(errorCode != ErrorCode.INVALID_ASYNC_HANDLING) {
                     response(ackPayload, errorCode, callback);
                 }
