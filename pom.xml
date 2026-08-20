@@ -45,7 +45,8 @@
                 <artifactId>maven-compiler-plugin</artifactId>
                 <version>3.11.0</version>
                 <configuration>
-                    <release>8</release>
+                    <source>${source.version}</source>
+                    <target>${target.version}</target>
                 </configuration>
             </plugin>
             <plugin>
@@ -75,6 +76,17 @@
     </build>
 
     <profiles>
+        <profile>
+            <!-- JDK9及以上编译时使用release 8，避免链接到高版本JDK的API（如ByteBuffer.rewind的协变覆写），
+                 保证产物能在Java 8上运行；JDK 8本身不支持release参数，走source/target即可 -->
+            <id>jdk8-release</id>
+            <activation>
+                <jdk>[9,)</jdk>
+            </activation>
+            <properties>
+                <maven.compiler.release>8</maven.compiler.release>
+            </properties>
+        </profile>
         <profile>
             <id>release-sign-artifacts</id>
             <build>
