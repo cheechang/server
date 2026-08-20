@@ -2257,6 +2257,14 @@ public class Main {
         }
 
 
+        voidIMResult = robotService.updateConversationUserSetting(new Conversation(ProtoConstants.ConversationType.ConversationType_Group, groupInfo.getTarget_id(), 0), 0, "hello test conversation user settings");
+        if (voidIMResult != null && voidIMResult.getErrorCode() == ErrorCode.ERROR_CODE_SUCCESS) {
+            System.out.println("update conversation user setting success");
+        } else {
+            System.out.println("update conversation user setting failure");
+            System.exit(-1);
+        }
+
         IMResult<OutputGroupMemberList> resultGetMembers = robotService.getGroupMembers(groupInfo.getTarget_id());
         if (resultGetMembers != null && resultGetMembers.getErrorCode() == ErrorCode.ERROR_CODE_SUCCESS) {
             System.out.println("get group member success");

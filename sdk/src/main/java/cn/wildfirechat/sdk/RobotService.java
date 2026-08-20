@@ -541,6 +541,23 @@ public class RobotService implements Closeable {
     }
 
     /**
+     * 设置会话级别用户设置，支持单聊和群聊。会话内所有用户（机器人除外）都会收到scope为31，key为convType-line-target_type的用户设置变更。
+     * @param conversation 会话信息
+     * @param type 设置类型
+     * @param value 设置值
+     * @return 操作结果
+     * @throws Exception 请求失败时抛出异常
+     */
+    public IMResult<Void> updateConversationUserSetting(Conversation conversation, int type, String value) throws Exception {
+        String path = APIPath.Robot_Conversation_Set_User_Setting;
+        InputConversationUserSetting input = new InputConversationUserSetting();
+        input.setConversation(conversation);
+        input.setType(type);
+        input.setValue(value);
+        return robotHttpUtils.httpJsonPost(path, input, Void.class);
+    }
+
+    /**
      * 设置群成员扩展信息
      * @param groupId 群组ID
      * @param memberId 成员用户ID

@@ -23,4 +23,5 @@ public interface UserSettingScope {
     int kUserSettingAddFriendStrategy = 28;
     int kUserSettingScopeSyncBadge = 29;
     int UserSettingScopeLockPC = 30;
+    int kUserSettingScope_Conversation_User_Setting = 31;
 }
