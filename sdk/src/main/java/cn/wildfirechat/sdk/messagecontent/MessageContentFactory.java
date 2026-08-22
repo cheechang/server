@@ -30,6 +30,7 @@ public class MessageContentFactory {
         StreamTextGeneratedMessageContent.class,
         CallStartMessageContent.class,
         StreamTextGeneratingMessageContent.class,
+        StreamTextCancelledMessageContent.class,
         CardMessageContent.class,
         MultiCallOngoingMessageContent.class,
         TextMessageContent.class,
