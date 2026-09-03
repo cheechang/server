@@ -48,7 +48,7 @@ public class ConversationUserSettingAction extends RobotAction {
                 Conversation conversation = input.getConversation();
                 WFCMessage.ModifyUserSettingReq modifyUserSettingReq = WFCMessage.ModifyUserSettingReq.newBuilder()
                     .setScope(UserSettingScope.kUserSettingScope_Conversation_User_Setting)
-                    .setKey(conversation.getType() + "-" + conversation.getLine() + "-" + conversation.getTarget() + "_" + input.getType())
+                    .setKey(conversation.getType() + "-" + conversation.getLine() + "-" + conversation.getTarget() + "_" + input.getType() + "_" + robot.getUid())
                     .setValue(StringUtil.isNullOrEmpty(input.getValue()) ? "" : input.getValue())
                     .build();
 
