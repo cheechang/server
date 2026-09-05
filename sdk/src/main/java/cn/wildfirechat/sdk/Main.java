@@ -2115,6 +2115,15 @@ public class Main {
             System.exit(-1);
         }
 
+        Thread.sleep(1000);
+        IMResult<OutputMessageData> outputMessageDataIMResult = robotService.getMessage(resultRobotSendMessage.result.getMessageUid());
+        if (outputMessageDataIMResult != null && outputMessageDataIMResult.getErrorCode() == ErrorCode.ERROR_CODE_SUCCESS) {
+            System.out.println("robot get message success");
+        } else {
+            System.out.println("robot get message failure");
+            System.exit(-1);
+        }
+
         //测试机器人回复消息
         IMResult<SendMessageResult> replyMessageResult = robotService.replyMessage(resultRobotSendMessage.getResult().getMessageUid(), payload, false);
         if (replyMessageResult != null && replyMessageResult.getErrorCode() == ErrorCode.ERROR_CODE_SUCCESS) {

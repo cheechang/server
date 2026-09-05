@@ -8,6 +8,7 @@ import cn.wildfirechat.pojos.mesh.PojoSearchUserRes;
 import cn.wildfirechat.pojos.moments.*;
 import cn.wildfirechat.proto.ProtoConstants;
 import cn.wildfirechat.sdk.model.IMResult;
+import cn.wildfirechat.sdk.utilities.AdminHttpUtils;
 import cn.wildfirechat.sdk.utilities.RobotHttpUtils;
 import org.apache.commons.codec.digest.DigestUtils;
 import org.apache.http.HttpResponse;
@@ -156,6 +157,19 @@ public class RobotService implements Closeable {
         updateMessageContentData.setUpdateTimestamp(0);
         updateMessageContentData.setDistribute(distribute?1:0);
         return robotHttpUtils.httpJsonPost(path, updateMessageContentData, Void.class);
+    }
+
+    /**
+     * 获取单条消息，只能是机器人参与会话中的消息
+     * <p>如果想要更多消息的读取，可以直接读取IM服务的数据库</p>
+     * @param messageUid 消息UID
+     * @return 消息数据
+     * @throws Exception 请求失败时抛出异常
+     */
+    public IMResult<OutputMessageData> getMessage(long messageUid) throws Exception {
+        String path = APIPath.Robot_Get_Message;
+        InputMessageUid inputMessageUid = new InputMessageUid(messageUid);
+        return robotHttpUtils.httpJsonPost(path, inputMessageUid, OutputMessageData.class);
     }
 
     /**
