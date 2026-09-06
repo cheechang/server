@@ -141,6 +141,17 @@ public class ProtoConstants {
         int Modify_Group_Extra = 122;
         int Modify_Group_Member_Extra = 123;
 
+        // ===== Agent(AI) 预定义消息 200-208 =====
+        // 与客户端（各端 messageContentType）保持一致：多 agent(机器人) 会话的
+        // 提问卡片 / 结构化回答 / 工具审批 / 目标进度 / 任务进度 / AI 面板指令。
+        int Agent_Question = 200;
+        int Agent_Answer = 201;
+        int Agent_Approval = 202;
+        int Agent_Approval_Result = 203;
+        int Agent_Goal = 206;
+        int Agent_Command = 207;
+        int Agent_Task_Progress = 208;
+
         int Call_Start = 400;
         int Call_Accept = 401;
         int Call_End = 402;
